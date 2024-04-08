@@ -35,7 +35,7 @@ class Card(pygame.sprite.Sprite):
             "J": 11,
             "Q": 12,
             "K": 13,
-            "A": 1,  # Ace can have a value of 1 or 11 depending on the game
+            "A": 14,  # Ace can have a value of 1 or 11 depending on the game
         }
 
         # Extract the rank from the image filename (assuming rank is before suit letter)

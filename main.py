@@ -1,4 +1,5 @@
-import pygame, sys
+import pygame
+import sys
 from settings import *
 from cards import Card
 import random
@@ -19,6 +20,8 @@ class Game:
         height_value = 100
         width = 200
         height = 600
+        self.selected_diamond_image = pygame.image.load("images/Diamonds/2D.png")  # Initialize with a default image
+        self.computer = {1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: 'T', 11: 'J', 12: 'Q', 13: 'K', 14: 'A'}
 
         for suit in ['Clubs']:
             for card_value in ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']:
@@ -31,17 +34,17 @@ class Game:
             width_value = 100
             height += height_value
 
-       
-
     def load_diamonds(self):
         """Loads diamond cards from a separate deck."""
-        diamond_values = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
-        for card_value in diamond_values:
-            image_path = f"images/Diamonds/{card_value}D.png"  # Adjust image path format
-            # Assuming diamond cards are in a separate "Diamonds" folder
-            position = (0, 0)  # Dummy position (will be updated later)
-            diamond_card = Card(image_path, position, "Diamonds")
-            self.diamond_deck.append(diamond_card)
+        self.diamond_deck = [
+            ['2', 2, "images/Diamonds/2D.png"], ['3', 3, "images/Diamonds/3D.png"],
+            ['4', 4, "images/Diamonds/4D.png"], ['5', 5, "images/Diamonds/5D.png"],
+            ['6', 6, "images/Diamonds/6D.png"], ['7', 7, "images/Diamonds/7D.png"],
+            ['8', 8, "images/Diamonds/8D.png"], ['9', 9, "images/Diamonds/9D.png"],
+            ['T', 10, "images/Diamonds/TD.png"], ['J', 11, "images/Diamonds/JD.png"],
+            ['Q', 12, "images/Diamonds/QD.png"], ['K', 13, "images/Diamonds/KD.png"],
+            ['A', 14, "images/Diamonds/AD.png"]
+        ]
 
     def diamond(self):
         """Returns a random diamond card."""
@@ -60,8 +63,16 @@ class Game:
             return chosen_value
         else:
             return None
-        
+
+    def display_selected_card(self, selected_image):
+        selected_card_width = 100
+        selected_card_height = 150
+        x = (WIDTH - selected_card_width) // 2
+        y = (HEIGHT - selected_card_height) // 2
+        self.screen.blit(pygame.transform.scale(selected_image, (selected_card_width, selected_card_height)), (x, y))
+
     def run(self):
+        self.load_diamonds()
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -80,11 +91,23 @@ class Game:
                                 # Award points based on chosen cards and diamond value
                                 diamond_card = self.diamond()
                                 if diamond_card is not None:
-                                    diamond_value = diamond_card.get_value()
+                                    diamond_value = diamond_card[1]
+                                    diamond_display = diamond_card[2]
+                                    self.selected_diamond_image = pygame.image.load(diamond_display)
+                                    self.display_selected_card(self.selected_diamond_image)
+
+                                    # Continue with player and computer turns
                                     if card.get_value() > computer_choice:
                                         self.player_score += diamond_value
-                                    else:
+                                    elif card.get_value() < computer_choice:
                                         self.computer_score += diamond_value
+                                    else:
+                                        self.player_score += diamond_value / 2
+                                        self.computer_score += diamond_value / 2
+                                        # Display computer's bid image
+                                    computer_bid_image = pygame.image.load(f"images/Heart/{self.computer[computer_choice]}H.png")
+                                    self.screen.blit(pygame.transform.scale(computer_bid_image, (100, 150)), (WIDTH // 2 - 50, HEIGHT // 2 - 75))
+
                                 else:
                                     # No diamonds left, no turn change
                                     pass
@@ -98,6 +121,10 @@ class Game:
             # Draw player one's cards
             for card in self.cards:
                 self.screen.blit(card.image, card.rect)
+
+            # Display diamond card if it has been drawn and the game is not over
+            if self.selected_diamond_image and (self.cards or self.computer_cards):
+                self.screen.blit(pygame.transform.scale(self.selected_diamond_image, (100, 150)), (WIDTH // 2 - 50, HEIGHT // 2 - 75))
 
             # Display score and current turn
             self.display_score(self.current_turn)
@@ -121,7 +148,8 @@ class Game:
                 self.screen.blit(winner_text_surface, winner_text_rect)
 
                 pygame.display.flip()
-
+                            
+            
     def display_score(self, current_turn):
         # Define score rectangle properties (adjust as needed)
         score_rect_x = 100
@@ -132,7 +160,6 @@ class Game:
         # Create the score rectangle
         score_rect = pygame.Rect(score_rect_x, score_rect_y, score_rect_width, score_rect_height)
 
-        # Set rectangle color (optional)
         pygame.draw.rect(self.screen, (255, 255, 255), score_rect)  # White rectangle
 
         # Define font and text color
@@ -154,8 +181,6 @@ class Game:
         self.screen.blit(heading_text, heading_text_rect)
         self.screen.blit(score_text, score_text_rect)
         self.screen.blit(turn_text, turn_text_rect)
-
-
 
 if __name__ == '__main__':
     game = Game()
