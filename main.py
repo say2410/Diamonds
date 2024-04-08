@@ -9,8 +9,9 @@ class Game:
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption(TITLE_STRING)
         self.cards = []
-        self.score = 0  # Initialize score
-        self.computer_cards = []  # List of computer's cards (hidden)
+        self.player_score = 0  # Initialize score
+        self.computer_score = 0
+        self.computer_cards = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]  # List of computer's cards (hidden)
         self.current_turn = "Player 1"  # Whose turn it is
         self.diamond_deck = []  # List to store diamond cards
         self.load_diamonds()  # Load diamond cards (function below)
@@ -29,6 +30,8 @@ class Game:
             width = 300
             width_value = 100
             height += height_value
+
+       
 
     def load_diamonds(self):
         """Loads diamond cards from a separate deck."""
@@ -79,10 +82,9 @@ class Game:
                                 if diamond_card is not None:
                                     diamond_value = diamond_card.get_value()
                                     if card.get_value() > computer_choice:
-                                        self.score += diamond_value
-                                        self.current_turn = "Computer"
+                                        self.player_score += diamond_value
                                     else:
-                                        self.current_turn = "Player 1"
+                                        self.computer_score += diamond_value
                                 else:
                                     # No diamonds left, no turn change
                                     pass
@@ -102,41 +104,57 @@ class Game:
 
             pygame.display.flip()
 
-    def update_score(self, card_value):
-        pass
+            # Check if all cards are played
+            if not self.cards and not self.computer_cards:
+                # Game over, determine winner
+                if self.player_score > self.computer_score:
+                    winner_text = "Player 1 wins!"
+                elif self.player_score < self.computer_score:
+                    winner_text = "Computer wins!"
+                else:
+                    winner_text = "It's a tie!"
+
+                # Display winner text
+                font = pygame.font.Font(None, 50)
+                winner_text_surface = font.render(winner_text, True, (255, 255, 255))
+                winner_text_rect = winner_text_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+                self.screen.blit(winner_text_surface, winner_text_rect)
+
+                pygame.display.flip()
 
     def display_score(self, current_turn):
-    # Define score rectangle properties (adjust as needed)
+        # Define score rectangle properties (adjust as needed)
         score_rect_x = 100
         score_rect_y = 100
         score_rect_width = WIDTH - 1625
         score_rect_height = 80
 
-    # Create the score rectangle
+        # Create the score rectangle
         score_rect = pygame.Rect(score_rect_x, score_rect_y, score_rect_width, score_rect_height)
 
-    # Set rectangle color (optional)
+        # Set rectangle color (optional)
         pygame.draw.rect(self.screen, (255, 255, 255), score_rect)  # White rectangle
 
-    # Define font and text color
+        # Define font and text color
         font = pygame.font.Font(None, 24)  # Adjust font size as needed
         text_color = (0, 0, 0)  # Black text
 
-    # Create text surfaces for heading, score and player labels
+        # Create text surfaces for heading, score and player labels
         heading_text = font.render("Scoreboard", True, text_color)
-        score_text = font.render(f"Player 1: {self.score}", True, text_color)
-        turn_text = font.render(f"Turn: {current_turn}", True, text_color)
+        score_text = font.render(f"Player 1: {self.player_score}", True, text_color)
+        turn_text = font.render(f"Computer: {self.computer_score}", True, text_color)
 
-    # Calculate text position within the rectangle
+        # Calculate text position within the rectangle
         INCREASED_OFFSET = 15  # Adjust spacing as needed
         heading_text_rect = heading_text.get_rect(center=(score_rect.centerx, score_rect.top + INCREASED_OFFSET))
         score_text_rect = score_text.get_rect(centerx=score_rect.centerx, y=score_rect.centery - score_text.get_height() // 2)
         turn_text_rect = turn_text.get_rect(centerx=score_rect.centerx, y=score_rect.bottom - turn_text.get_height() - INCREASED_OFFSET)
 
-    # Blit the text surfaces onto the screen
+        # Blit the text surfaces onto the screen
         self.screen.blit(heading_text, heading_text_rect)
         self.screen.blit(score_text, score_text_rect)
         self.screen.blit(turn_text, turn_text_rect)
+
 
 
 if __name__ == '__main__':
